@@ -17,19 +17,16 @@ Shadingway provides a way to programmatically access information that is normall
 
 ## Features
 
-  * **Exposes Current ReShade Preset Path:**  Provides access to the file path of the currently active ReShade preset.
-  * **Exposes Current ReShade Preset Folder:**  Reveals the directory where the active preset is located.
+  * **Exposes Current ReShade Preset data:**  Provides access to the file path of the currently active ReShade preset.
   * **Reports Global Effect Toggle State:**  Indicates whether ReShade effects are globally enabled or disabled.
-  * **Provides Access to Effect Parameter Values:** (Future Feature - *optional to include if planned, otherwise remove*) Allows tools to read the current values of ReShade effect parameters (uniforms).
   * **Lightweight and Minimal Impact:** Designed to be efficient and have minimal performance overhead on ReShade and the game.
 
 ## Installation
 
-1.  Ensure you have [ReShade](https://www.google.com/url?sa=E&source=gmail&q=https://www.google.com/url?sa=E%26source=gmail%26q=https://reshade.me/) already installed for your game.
-2.  Download the latest release of Shadingway from the [Releases page](https://www.google.com/url?sa=E&source=gmail&q=https://www.google.com/url?sa=E%26source=gmail%26q=link-to-your-releases-page-here). (*Replace with your actual releases page link when available*)
+1.  Ensure you have [ReShade with Add-on Support](https://reshade.me/) already installed for your game.
+2.  Download the latest release of Shadingway from the [Releases page](https://www.google.com).
 3.  Extract the downloaded archive.
-4.  Place the `Shadingway.dll` file into your ReShade "addons" folder. This folder is typically located in the same directory as your game executable, within the `reshade-shaders` folder (e.g., `[game_folder]\reshade-shaders\addons`).
-5.  Ensure that addons are enabled in your `ReShade.ini` file.  Look for the `[GENERAL]` section and make sure `EffectSearchPaths` includes a path to the "addons" folder, and `PerformanceMode` is set to `0` or `1` (not `2`).
+4.  Place the `Shadingway.addon` file into your ReShade `addons` folder. This folder is typically located in the same directory as your game executable, within the `reshade-shaders` folder (e.g., `[game_folder]\reshade-shaders\addons`).
 
 ## How to Use
 
