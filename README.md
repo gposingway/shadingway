@@ -26,7 +26,7 @@ Shadingway provides a way to programmatically access information that is normall
 1.  Ensure you have [ReShade with Add-on Support](https://reshade.me/) already installed for your game.
 2.  Download the latest release of Shadingway from the [Releases page](https://www.google.com).
 3.  Extract the downloaded archive.
-4.  Place the `Shadingway.addon` file into your ReShade `addons` folder. This folder is typically located in the same directory as your game executable, within the `reshade-shaders` folder (e.g., `[game_folder]\reshade-shaders\addons`).
+4.  Place the `Shadingway.addon` file into your game folder.
 
 ## How to Use
 
