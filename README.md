@@ -55,7 +55,7 @@ The `shadingway.addon-state.json` file contains a JSON object with the following
   "preset": {
     "collection": "Witch's Presets",
     "name": "Witch'sMoonForGameplay",
-    "path": "E:\\Games\\SquareEnix\\FINAL FANTASY XIV - A Realm Reborn\\game\\reshade-presets\\Witch's Presets\\Witch'sMoonForGameplay.ini"
+    "path": "C:\\Games\\SquareEnix\\FINAL FANTASY XIV - A Realm Reborn\\game\\reshade-presets\\Witch's Presets\\Witch'sMoonForGameplay.ini"
   }
 }
 ```
