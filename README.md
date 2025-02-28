@@ -37,45 +37,29 @@ Shadingway itself does not have a user interface or directly perform any actions
 
 **Data Output:**
 
-Shadingway writes ReShade information to a file named `shadingway-state.json`. This file is located in your game's installation folder (the same folder where your game executable is located).
+Shadingway writes ReShade information to a file named `shadingway.addon-state.json`. This file is located in your game's installation folder (the same folder where your game executable is located).
 
 **File Updates:**
 
-The `shadingway-state.json` file is updated every frame while the game is running and ReShade is active.
+The `shadingway.addon-state.json` file is updated every frame while the game is running and ReShade is active.
 
 **JSON File Content:**
 
-The `shadingway-state.json` file contains a JSON object with the following key-value pairs:
+The `shadingway.addon-state.json` file contains a JSON object with the following key-value pairs:
 
 ```json
 {
-  "preset_path": "...",      // Path to the currently active ReShade preset file
-  "preset_folder": "...",    // Folder containing the active preset
-  "effects_enabled": true/false, // Global effects toggle state (true = enabled, false = disabled)
+  "effects": {
+    "enabled": true
+  },
+  "preset": {
+    "collection": "Witch's Presets",
+    "name": "Witch'sMoonForGameplay",
+    "path": "E:\\Games\\SquareEnix\\FINAL FANTASY XIV - A Realm Reborn\\game\\reshade-presets\\Witch's Presets\\Witch'sMoonForGameplay.ini"
+  }
 }
 ```
-
-**For Tool Developers:**
-
-1.  **Locate `shadingway-state.json`:** Your external tool or addon needs to locate the `shadingway-state.json` file in the game's installation folder. You can typically determine the game installation folder by finding the directory where the game executable is running.
-2.  **Read and Parse JSON:**  Implement JSON parsing in your tool to read the contents of `shadingway-state.json`.
-3.  **Access ReShade Information:**  Extract the desired ReShade configuration and runtime data from the parsed JSON object (e.g., `preset_path`, `effects_enabled`).
-4.  **Utilize ReShade Information:**  Use the retrieved ReShade data within your tool to implement your desired functionality.
-
-## Planned Features (Future Development)
-
-  * **Expose More ReShade Settings:**  Expand the data exposed to include more ReShade configuration options and runtime states.
-  * **Customizable Data Output:**  Allow users or tools to configure which data points are exposed and how they are formatted.
-  * **Event-Based Data Updates:**  Implement event-driven data updates for more efficient real-time data access (e.g., trigger an event when the preset changes instead of constant polling).
 
 ## Contributing
 
 Contributions are welcome\!  If you have ideas for new features, improvements, or bug fixes, please feel free to open issues or pull requests on this GitHub repository.
-
-## Credits
-
-  * Developed by [Your GitHub Username/Name]
-
------
-
-**Empower your tools with ReShade data using Shadingway\!**
