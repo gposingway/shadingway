@@ -9,6 +9,7 @@
 #include "dllmain.h"
 #include <format> // Include for std::format
 #include <sstream> // Include for stringstream
+#include <Windows.h> // Include for GetCurrentProcessId
 
 using json = nlohmann::json;
 namespace fs = std::filesystem; // Namespace alias for filesystem
@@ -122,9 +123,11 @@ namespace shadingway
 		logging::info("write_options_to_json: Started");
 
 		PresetInfo presetInfo = get_detailed_preset_info();
+		DWORD processId = GetCurrentProcessId(); // Get current process ID
 
 		json outputJson;
 
+		outputJson["pid"] = processId; // Add process ID to JSON as "pid"
 		json presetJson;
 		presetJson["path"] = presetInfo.path;
 		presetJson["name"] = presetInfo.name;
