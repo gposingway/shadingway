@@ -38,7 +38,7 @@ Shadingway writes ReShade information to a file named `shadingway.addon-state.js
 
 **File Updates:**
 
-The `shadingway.addon-state.json` file is updated every frame while the game is running and ReShade is active.
+The `shadingway.addon-state.json` file is updated every time a new preset is selected, or a monitored setting is changed.
 
 **JSON File Content:**
 
