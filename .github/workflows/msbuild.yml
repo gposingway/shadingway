@@ -29,9 +29,18 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
+      with:
+        submodules: true
+          
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
+
+    - name: Install vcpkg
+      uses: lukka/run-vcpkg@v7
+      with:
+        vcpkgGitCommitId: 818395c3fa740915a499905c81f545c64834859c
+        appendedVcpkgTriplet: x64-windows-static
+      
 
     - name: Restore NuGet packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
@@ -41,7 +50,7 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
+      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:VCPKG_TOOLCHAIN=vcpkg/scripts/buildsystems/vcpkg.cmake ${{env.SOLUTION_FILE_PATH}}
 
     - name: Rename DLL to .addon
       shell: bash
