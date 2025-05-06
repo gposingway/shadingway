@@ -131,4 +131,16 @@ if %ERRORLEVEL% neq 0 (
     )
 )
 
+:: Run publish.bat if it exists
+if exist publish.bat (
+    echo.
+    echo Running publish script...
+    call publish.bat
+    if %ERRORLEVEL% neq 0 (
+        echo Warning: Publish script completed with errors.
+    ) else (
+        echo Publish completed successfully.
+    )
+)
+
 exit /b 0
