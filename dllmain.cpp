@@ -10,6 +10,7 @@
 #include <format> // Include for std::format
 #include <sstream> // Include for stringstream
 #include <Windows.h> // Include for GetCurrentProcessId
+#include <cmath> // Include for round function
 
 using json = nlohmann::json;
 namespace fs = std::filesystem; // Namespace alias for filesystem
@@ -24,6 +25,17 @@ namespace shadingway
 
 	// --- Function Forward Declarations ---
 	void write_options_to_json(reshade::api::effect_runtime* runtime); // Forward declaration
+
+	// --- Display Information Functions ---
+	struct DisplayInfo {
+		uint32_t width = 0;
+		uint32_t height = 0;
+		float aspect_ratio = 0.0f;
+		std::string screen_type = "unknown";
+	};
+	
+	DisplayInfo get_display_info(reshade::api::effect_runtime* runtime);
+	std::string determine_screen_type(uint32_t width, uint32_t height);
 
 	// --- Logging Wrappers ---
 	namespace logging {
@@ -137,6 +149,15 @@ namespace shadingway
 		outputJson["effects"] = {
 			{"enabled", effects_enabled_state}
 		};
+		
+		// Add display information to the JSON output
+		DisplayInfo displayInfo = get_display_info(runtime);
+		json displayJson;
+		displayJson["width"] = displayInfo.width;
+		displayJson["height"] = displayInfo.height;
+		displayJson["aspect_ratio"] = round(displayInfo.aspect_ratio * 1000) / 1000.0f; // Round to 3 decimal places
+		displayJson["screen_type"] = displayInfo.screen_type;
+		outputJson["display"] = displayJson;
 
 		if (debug_mode)
 		{
@@ -281,6 +302,72 @@ namespace shadingway
 
 		logging::info("get_preprocessor_definitions: Finished, returning definitions and static properties");
 		return std::make_pair(definitions_map, static_properties_map);
+	}
+
+
+	// --- Display Information Functions ---
+	DisplayInfo get_display_info(reshade::api::effect_runtime* runtime)
+	{
+		DisplayInfo info;
+		
+		if (runtime == nullptr) {
+			logging::warning("get_display_info: Runtime is nullptr, returning default values");
+			return info;
+		}
+		
+		// Get current resolution from ReShade
+		uint32_t width = 0, height = 0;
+		runtime->get_screenshot_width_and_height(&width, &height);
+		
+		info.width = width;
+		info.height = height;
+		
+		// Calculate aspect ratio
+		if (height > 0) {
+			info.aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
+		}
+		
+		// Determine screen type based on resolution
+		info.screen_type = determine_screen_type(width, height);
+		
+		logging::info(std::format("get_display_info: Resolution: {}x{}, Aspect Ratio: {:.3f}, Screen Type: {}", 
+			width, height, info.aspect_ratio, info.screen_type));
+		
+		return info;
+	}
+	
+	std::string determine_screen_type(uint32_t width, uint32_t height)
+	{
+		// If either dimension is zero, return "unknown"
+		if (width == 0 || height == 0) {
+			return "unknown";
+		}
+		
+		// Calculate total pixels (roughly corresponds to marketing terms)
+		const uint64_t total_pixels = static_cast<uint64_t>(width) * static_cast<uint64_t>(height);
+		
+		// Determine screen type based on resolution heuristics
+		if (total_pixels >= 33177600) { // 8K (7680x4320)
+			return "8k";
+		}
+		else if (total_pixels >= 8294400) { // 4K (3840x2160)
+			return "4k";
+		}
+		else if (total_pixels >= 3686400) { // 2K/1440p (2560x1440)
+			return "2k";
+		}
+		else if (total_pixels >= 2073600) { // 1080p (1920x1080)
+			return "1080p";
+		}
+		else if (total_pixels >= 921600) { // 720p (1280x720)
+			return "720p";
+		}
+		else if (total_pixels >= 480000) { // 480p (800x600)
+			return "480p";
+		}
+		else {
+			return "low-res";
+		}
 	}
 
 
