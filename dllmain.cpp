@@ -100,6 +100,7 @@ namespace shadingway
 	// Explicitly define NAME and DESCRIPTION *inside* the namespace
 	const char* NAME = "Shadingway"; // Addon name
 	const char* DESCRIPTION = "Logs ReShade preset path, preset name, preset collection, effect status, screen resolution to a JSON file. Preprocessor definitions and static properties are logged only when debug mode is enabled.";
+	const char* AUTHOR = "Leon Aquitaine"; // Addon author
 
 	static void on_preset_change(reshade::api::effect_runtime* runtime, const char* path)
 	{
@@ -319,4 +320,5 @@ namespace shadingway
 extern "C" {
 	__declspec(dllexport) const char* NAME = shadingway::NAME;
 	__declspec(dllexport) const char* DESCRIPTION = shadingway::DESCRIPTION;
+	__declspec(dllexport) const char* AUTHOR = shadingway::AUTHOR;
 }
