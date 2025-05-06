@@ -1,0 +1,100 @@
+name: Create Release
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "LICENSE"
+      - ".gitignore"
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.3
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: 'a42af01b72c83797b d3f4f2c5872cc1121b5d6c6b3'
+
+      - name: Build Shadingway (x64 Release)
+        run: |
+          .\build.bat Release x64
+          dir dist
+
+      - name: Read version
+        id: read_version
+        shell: bash
+        run: |
+          VERSION=$(cat dist/version.txt)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create ZIP archive
+        shell: powershell
+        run: |
+          $zipFileName = "Shadingway${{ env.VERSION }}.zip"
+          Compress-Archive -Path "dist/shadingway.addon" -DestinationPath "dist/$zipFileName" -Force
+          echo "ZIP file created: $zipFileName"
+
+      - name: Check if tag exists
+        id: check_tag
+        shell: bash
+        run: |
+          if git ls-remote --tags origin refs/tags/v${{ env.VERSION }} | grep -q "refs/tags/v${{ env.VERSION }}"; then
+            echo "tag_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "tag_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create tag if needed
+        if: steps.check_tag.outputs.tag_exists == 'false'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a v${{ env.VERSION }} -m "Release v${{ env.VERSION }}"
+          git push origin v${{ env.VERSION }}
+
+      - name: Prepare release notes
+        id: prepare_release
+        shell: bash
+        run: |
+          TEMPLATE_PATH="./docs/template/release.md"
+          NOTES_PATH="./release_notes.md"
+          
+          # Get commit messages since last release tag for release notes
+          PREV_TAG=$(git describe --tags --abbrev=0 --always 2>/dev/null || echo "HEAD~10")
+          RELEASE_NOTES=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s" | grep -v "Merge pull request" | grep -v "Merge branch")
+          
+          # If no meaningful commits, add a default message
+          if [ -z "$RELEASE_NOTES" ]; then
+            RELEASE_NOTES="- Maintenance and stability improvements"
+          fi
+          
+          # Replace variables in template
+          sed "s/\${VERSION}/${{ env.VERSION }}/g" "$TEMPLATE_PATH" > "$NOTES_PATH"
+          sed -i "s/\${RELEASE_NOTES}/$RELEASE_NOTES/g" "$NOTES_PATH"
+          
+          echo "notes_path=$NOTES_PATH" >> $GITHUB_OUTPUT
+
+      - name: Create or update release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: Shadingway v${{ env.VERSION }}
+          body_path: ${{ steps.prepare_release.outputs.notes_path }}
+          draft: false
+          prerelease: false
+          files: |
+            dist/Shadingway${{ env.VERSION }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

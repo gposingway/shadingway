@@ -1,5 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Version>0.0.0.1</Version>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetName>shadingway</TargetName>
+  </PropertyGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <!-- Create dist directory if it doesn't exist -->
+    <MakeDir Directories="$(ProjectDir)dist" Condition="!Exists('$(ProjectDir)dist')" />
+    
+    <!-- Delete existing .addon file in dist folder if it exists -->
+    <Delete Files="$(ProjectDir)dist\$(TargetName).addon" 
+            Condition="Exists('$(ProjectDir)dist\$(TargetName).addon')" />
+    
+    <!-- Copy DLL directly to dist folder as .addon -->
+    <Copy SourceFiles="$(OutDir)$(TargetName).dll" 
+          DestinationFiles="$(ProjectDir)dist\$(TargetName).addon"
+          OverwriteReadOnlyFiles="true" />
+    
+    <!-- Write version to version.txt file -->
+    <WriteLinesToFile File="$(ProjectDir)dist\version.txt" 
+                      Lines="$(Version)" 
+                      Overwrite="true" />
+  </Target>  
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -71,6 +95,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -113,7 +140,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>E:\tools\vcpkg\vcpkg\installed\x64-windows;.\includes\reshade-main\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\includes\reshade-main\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -132,7 +159,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>E:\tools\vcpkg\vcpkg\installed\x64-windows;.\includes\reshade-main\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\includes\reshade-main\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
