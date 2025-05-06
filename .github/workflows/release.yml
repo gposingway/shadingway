@@ -41,11 +41,16 @@ jobs:
           Compress-Archive -Path "dist/shadingway.addon" -DestinationPath "dist/$zipFileName" -Force
           echo "ZIP file created: $zipFileName"
 
+      - name: Fetch all tags
+        run: |
+          git fetch --tags origin
+
       - name: Check if tag exists
         id: check_tag
         run: |
-          $tagExists = git rev-parse "v${{ env.VERSION }}" 2>$null
-          if ($LASTEXITCODE -eq 0) {
+          $tagName = "v${{ env.VERSION }}"
+          $tagExists = $(git tag -l $tagName)
+          if ($tagExists -eq $tagName) {
             echo "tag_exists=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           } else {
             echo "tag_exists=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
