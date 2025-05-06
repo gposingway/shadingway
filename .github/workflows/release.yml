@@ -63,17 +63,10 @@ jobs:
         id: prepare_release
         shell: bash
         run: |
-          # Define paths with explicit checking
-          if [ -f "./docs/template/release.md" ]; then
-            TEMPLATE_PATH="./docs/template/release.md"
-          else
-            echo "Error: Template file not found at ./docs/template/release.md"
-            exit 1
-          fi
+          # Create release notes from template
+          cp ./docs/template/release.md ./release_notes.md
           
-          NOTES_PATH="./release_notes.md"
-          
-          # Get commit messages since last release tag for release notes
+          # Get commit messages since last release tag
           PREV_TAG=$(git describe --tags --abbrev=0 --always 2>/dev/null || echo "HEAD~10")
           RELEASE_NOTES=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s" | grep -v "Merge pull request" | grep -v "Merge branch")
           
@@ -82,15 +75,11 @@ jobs:
             RELEASE_NOTES="- Maintenance and stability improvements"
           fi
           
-          # Use more reliable approach for variable substitution
-          cp "$TEMPLATE_PATH" "$NOTES_PATH"
-          VERSION_ESCAPED=$(echo "${{ env.VERSION }}" | sed 's/[\/&]/\\&/g')
-          RELEASE_NOTES_ESCAPED=$(echo "$RELEASE_NOTES" | sed 's/[\/&]/\\&/g')
+          # Replace placeholders directly
+          sed -i "s/\${VERSION}/${{ env.VERSION }}/g" ./release_notes.md
+          sed -i "s/\${RELEASE_NOTES}/$RELEASE_NOTES/g" ./release_notes.md
           
-          sed -i "s/\${VERSION}/$VERSION_ESCAPED/g" "$NOTES_PATH"
-          sed -i "s/\${RELEASE_NOTES}/$RELEASE_NOTES_ESCAPED/g" "$NOTES_PATH"
-          
-          echo "notes_path=$NOTES_PATH" >> $GITHUB_OUTPUT
+          echo "notes_path=./release_notes.md" >> $GITHUB_OUTPUT
 
       - name: Create or update release
         uses: softprops/action-gh-release@v1
