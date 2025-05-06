@@ -9,7 +9,7 @@ on:
       - ".gitignore"
 
 jobs:
-  build-and-release:
+  create-release:
     runs-on: windows-latest
     permissions:
       contents: write
@@ -18,17 +18,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1.3
-
-      - name: Setup vcpkg
-        uses: lukka/run-vcpkg@v11
-        with:
-          vcpkgGitCommitId: 'a42af01b72c83797b d3f4f2c5872cc1121b5d6c6b3'
-
-      - name: Build Shadingway (x64 Release)
+      - name: Verify dist files exist
         run: |
-          .\build.bat Release x64
+          if (!(Test-Path -Path "dist/shadingway.addon") -or !(Test-Path -Path "dist/version.txt")) {
+            Write-Error "Required files in dist directory not found. Please ensure dist/shadingway.addon and dist/version.txt are committed."
+            exit 1
+          }
           dir dist
 
       - name: Read version
