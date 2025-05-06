@@ -28,11 +28,11 @@ jobs:
 
       - name: Read version
         id: read_version
-        shell: bash
         run: |
-          VERSION=$(cat dist/version.txt)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          $VERSION = Get-Content -Path dist/version.txt -Raw
+          $VERSION = $VERSION.Trim()
+          echo "VERSION=$VERSION" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "version=$VERSION" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Create ZIP archive
         shell: powershell
@@ -43,43 +43,43 @@ jobs:
 
       - name: Check if tag exists
         id: check_tag
-        shell: bash
         run: |
-          if git ls-remote --tags origin refs/tags/v${{ env.VERSION }} | grep -q "refs/tags/v${{ env.VERSION }}"; then
-            echo "tag_exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "tag_exists=false" >> $GITHUB_OUTPUT
-          fi
+          $tagExists = git rev-parse "v${{ env.VERSION }}" 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            echo "tag_exists=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          } else {
+            echo "tag_exists=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          }
 
       - name: Create tag if needed
         if: steps.check_tag.outputs.tag_exists == 'false'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git tag -a v${{ env.VERSION }} -m "Release v${{ env.VERSION }}"
-          git push origin v${{ env.VERSION }}
+          git tag -a "v${{ env.VERSION }}" -m "Release v${{ env.VERSION }}"
+          git push origin "v${{ env.VERSION }}"
 
       - name: Prepare release notes
         id: prepare_release
-        shell: bash
         run: |
-          # Create release notes from template
-          cp ./docs/template/release.md ./release_notes.md
+          $templateContent = Get-Content -Path "./docs/template/release.md" -Raw
+          $replacedContent = $templateContent -replace '\$\{VERSION\}', '${{ env.VERSION }}'
           
-          # Get commit messages since last release tag
-          PREV_TAG=$(git describe --tags --abbrev=0 --always 2>/dev/null || echo "HEAD~10")
-          RELEASE_NOTES=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s" | grep -v "Merge pull request" | grep -v "Merge branch")
+          # Get commit messages since last release tag for release notes
+          $prevTag = git describe --tags --abbrev=0 --always 2>$null
+          if ($LASTEXITCODE -ne 0) { $prevTag = "HEAD~10" }
+          
+          $releaseNotes = git log "${prevTag}..HEAD" --pretty=format:"- %s" | Where-Object { $_ -notmatch "Merge pull request" -and $_ -notmatch "Merge branch" }
           
           # If no meaningful commits, add a default message
-          if [ -z "$RELEASE_NOTES" ]; then
-            RELEASE_NOTES="- Maintenance and stability improvements"
-          fi
+          if (-not $releaseNotes) {
+            $releaseNotes = "- Maintenance and stability improvements"
+          }
           
-          # Replace placeholders directly
-          sed -i "s/\${VERSION}/${{ env.VERSION }}/g" ./release_notes.md
-          sed -i "s/\${RELEASE_NOTES}/$RELEASE_NOTES/g" ./release_notes.md
+          $replacedContent = $replacedContent -replace '\$\{RELEASE_NOTES\}', ($releaseNotes -join "`n")
+          Set-Content -Path "./release_notes.md" -Value $replacedContent
           
-          echo "notes_path=./release_notes.md" >> $GITHUB_OUTPUT
+          echo "notes_path=./release_notes.md" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Create or update release
         uses: softprops/action-gh-release@v1
