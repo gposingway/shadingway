@@ -63,7 +63,14 @@ jobs:
         id: prepare_release
         shell: bash
         run: |
-          TEMPLATE_PATH="./docs/template/release.md"
+          # Define paths with explicit checking
+          if [ -f "./docs/template/release.md" ]; then
+            TEMPLATE_PATH="./docs/template/release.md"
+          else
+            echo "Error: Template file not found at ./docs/template/release.md"
+            exit 1
+          fi
+          
           NOTES_PATH="./release_notes.md"
           
           # Get commit messages since last release tag for release notes
@@ -75,9 +82,13 @@ jobs:
             RELEASE_NOTES="- Maintenance and stability improvements"
           fi
           
-          # Replace variables in template
-          sed "s/\${VERSION}/${{ env.VERSION }}/g" "$TEMPLATE_PATH" > "$NOTES_PATH"
-          sed -i "s/\${RELEASE_NOTES}/$RELEASE_NOTES/g" "$NOTES_PATH"
+          # Use more reliable approach for variable substitution
+          cp "$TEMPLATE_PATH" "$NOTES_PATH"
+          VERSION_ESCAPED=$(echo "${{ env.VERSION }}" | sed 's/[\/&]/\\&/g')
+          RELEASE_NOTES_ESCAPED=$(echo "$RELEASE_NOTES" | sed 's/[\/&]/\\&/g')
+          
+          sed -i "s/\${VERSION}/$VERSION_ESCAPED/g" "$NOTES_PATH"
+          sed -i "s/\${RELEASE_NOTES}/$RELEASE_NOTES_ESCAPED/g" "$NOTES_PATH"
           
           echo "notes_path=$NOTES_PATH" >> $GITHUB_OUTPUT
 
