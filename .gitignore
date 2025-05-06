@@ -4,3 +4,7 @@
 /vcpkg_installed
 /x64
 publish.bat
+x64/Release/shadingway.dll
+x64/Release/shadingway.exp
+x64/Release/shadingway.lib
+x64/Release/shadingway.pdb
